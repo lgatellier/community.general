@@ -19,6 +19,7 @@ try:
 except ImportError:
     from urllib.parse import urljoin  # Python 3+
 
+import inspect
 import traceback
 
 GITLAB_IMP_ERR = None
@@ -73,9 +74,17 @@ def ensure_gitlab_package(module):
             exception=GITLAB_IMP_ERR
         )
 
+def ensure_gitlab_package_version(module, module_name, expected_version):
+    installed_version = gitlab.__version__
+    if LooseVersion(installed_version) < LooseVersion(expected_version):
+        module.fail_json(msg="community.general.%(calling_module)s (or one of its features) requires python-gitlab Python module >= %(expected_version)s (installed version: [%(installed_version)s])."
+                             " Please upgrade python-gitlab to version %(expected_version)s or above." % {'calling_module': module_name, 'expected_version': expected_version, 'installed_version': installed_version})
+    pass
 
-def gitlab_authentication(module):
+def gitlab_authentication(module, module_name=None, expected_version=None):
     ensure_gitlab_package(module)
+    if module_name and expected_version:
+        ensure_gitlab_package_version(module, module_name, expected_version)
 
     gitlab_url = module.params['api_url']
     validate_certs = module.params['validate_certs']

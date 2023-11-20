@@ -150,7 +150,6 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.api import basic_auth_argument_spec
 from ansible.module_utils.common.text.converters import to_native, to_text
 
-from ansible_collections.community.general.plugins.module_utils.version import LooseVersion
 from ansible_collections.community.general.plugins.module_utils.gitlab import (
     auth_argument_spec, gitlab_authentication, gitlab, find_project
 )
@@ -323,7 +322,7 @@ def main():
     )
 
     # check prerequisites and connect to gitlab server
-    gitlab_instance = gitlab_authentication(module)
+    gitlab_instance = gitlab_authentication(module, 'gitlab_merge_request', '2.3.0')
 
     project = module.params['project']
     source_branch = module.params['source_branch']
@@ -338,10 +337,6 @@ def main():
     reviewer_ids = module.params['reviewer_ids']
     state = module.params['state']
 
-    gitlab_version = gitlab.__version__
-    if LooseVersion(gitlab_version) < LooseVersion('2.3.0'):
-        module.fail_json(msg="community.general.gitlab_merge_request requires python-gitlab Python module >= 2.3.0 (installed version: [%s])."
-                             " Please upgrade python-gitlab to version 2.3.0 or above." % gitlab_version)
 
     this_project = find_project(gitlab_instance, project)
     if this_project is None:

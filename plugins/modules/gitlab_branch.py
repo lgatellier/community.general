@@ -82,7 +82,6 @@ import traceback
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.api import basic_auth_argument_spec
 
-from ansible_collections.community.general.plugins.module_utils.version import LooseVersion
 from ansible_collections.community.general.plugins.module_utils.gitlab import (
     auth_argument_spec, gitlab_authentication, gitlab
 )
@@ -146,17 +145,12 @@ def main():
     )
 
     # check prerequisites and connect to gitlab server
-    gitlab_instance = gitlab_authentication(module)
+    gitlab_instance = gitlab_authentication(module, 'gitlab_branch', '2.3.0')
 
     project = module.params['project']
     branch = module.params['branch']
     ref_branch = module.params['ref_branch']
     state = module.params['state']
-
-    gitlab_version = gitlab.__version__
-    if LooseVersion(gitlab_version) < LooseVersion('2.3.0'):
-        module.fail_json(msg="community.general.gitlab_proteched_branch requires python-gitlab Python module >= 2.3.0 (installed version: [%s])."
-                             " Please upgrade python-gitlab to version 2.3.0 or above." % gitlab_version)
 
     this_gitlab = GitlabBranch(module=module, project=project, gitlab_instance=gitlab_instance)
 

@@ -220,11 +220,8 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_native
 
 from ansible_collections.community.general.plugins.module_utils.gitlab import (
-    auth_argument_spec, gitlab_authentication, gitlab
+    auth_argument_spec, gitlab_authentication, gitlab, ensure_gitlab_package_version
 )
-
-
-from ansible_collections.community.general.plugins.module_utils.version import LooseVersion
 
 
 class GitLabRunner(object):
@@ -306,9 +303,8 @@ class GitLabRunner(object):
         try:
             if arguments.get('token') is not None:
                 runner = self._gitlab.runners.create(arguments)
-            elif LooseVersion(gitlab.__version__) < LooseVersion('4.0.0'):
-                self._module.fail_json(msg="New runner creation workflow requires python-gitlab 4.0.0 or higher")
             else:
+                ensure_gitlab_package_version(self._module, 'gitlab_runner', '4.0.0')
                 runner = self._gitlab.user.runners.create(arguments)
         except (gitlab.exceptions.GitlabCreateError) as e:
             self._module.fail_json(msg="Failed to create runner: %s " % to_native(e))
